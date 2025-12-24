@@ -1,16 +1,20 @@
 from fastapi import APIRouter, UploadFile, File, HTTPException
 import uuid
-
+from app.services.pdf_extractor import extract_text_from_pdf
+from app.rag.chunker import chunk_text
+from app.rag.embeddings import create_embeddings
+from app.rag.vector_store import init_vector_store, add_to_store
 from app.services.pdf_extractor import extract_text_from_pdf
 
 router = APIRouter()
 
 # Temporär lagring (dict i minnet)
 uploaded_documents = {}
-
+vector_store_initialized = False
 
 @router.post("/upload")
 async def upload_document(file: UploadFile = File(...)):
+    global vector_store_initialized
     
     allowed_types = ["application/pdf", "text/plain"]
     if file.content_type not in allowed_types:
@@ -28,20 +32,32 @@ async def upload_document(file: UploadFile = File(...)):
     else:
         text = content.decode("utf-8")
     
-    # Spara med text
+    # Chunka text
+    chunks = chunk_text(text)
+    
+    # Skapa embeddings
+    embeddings = create_embeddings(chunks)
+    
+    # Initiera vector store om första gången
+    if not vector_store_initialized:
+        init_vector_store()
+        vector_store_initialized = True
+    
+    # Lägg till i vector store
+    add_to_store(chunks, embeddings)
+    
+    # Spara metadata
     uploaded_documents[doc_id] = {
         "id": doc_id,
         "filename": file.filename,
-        "size": len(content),
-        "text": text,
-        "text_length": len(text)
+        "chunks": len(chunks)
     }
     
     return {
-        "message": "✅ Dokument uppladdat och text extraherad!",
+        "message": "✅ Dokument processad och indexerad!",
         "document_id": doc_id,
         "filename": file.filename,
-        "text_preview": text[:500] + "..." if len(text) > 500 else text
+        "chunks_created": len(chunks)
     }
 
 
