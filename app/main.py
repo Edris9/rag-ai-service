@@ -1,4 +1,5 @@
 from fastapi import FastAPI
+from app.api import documents
 
 app = FastAPI(
     title="RAG AI Service",
@@ -6,6 +7,7 @@ app = FastAPI(
     version="1.0.0"
 )
 
+app.include_router(documents.router, prefix="/documents", tags=["Documents"])
 
 @app.get("/")
 async def root():
