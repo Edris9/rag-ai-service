@@ -1,5 +1,6 @@
 from fastapi import FastAPI
-from app.api import documents
+from app.api import documents,query
+
 
 app = FastAPI(
     title="RAG AI Service",
@@ -8,6 +9,7 @@ app = FastAPI(
 )
 
 app.include_router(documents.router, prefix="/documents", tags=["Documents"])
+app.include_router(query.router, prefix="/query", tags=["Query"])
 
 @app.get("/")
 async def root():

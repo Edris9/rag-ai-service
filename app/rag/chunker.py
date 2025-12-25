@@ -1,7 +1,7 @@
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 
 
-def chunk_text(text: str, chunk_size: int = 500, overlap: int = 50) -> list[str]:
+def chunk_text(text: str, chunk_size: int = 200, overlap: int = 50) -> list[str]:
     """Delar upp text i mindre bitar för embeddings."""
     splitter = RecursiveCharacterTextSplitter(
         chunk_size=chunk_size,
