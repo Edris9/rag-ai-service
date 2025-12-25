@@ -1,4 +1,5 @@
-from fastapi import APIRouter, UploadFile, File, HTTPException
+from fastapi import APIRouter, UploadFile, File, HTTPException, Depends
+from app.auth.dependencies import require_auth
 import uuid
 from app.services.pdf_extractor import extract_text_from_pdf
 from app.rag.chunker import chunk_text
@@ -13,7 +14,8 @@ uploaded_documents = {}
 vector_store_initialized = False
 
 @router.post("/upload")
-async def upload_document(file: UploadFile = File(...)):
+
+async def upload_document(file: UploadFile = File(...), user: str = Depends(require_auth)):
     global vector_store_initialized
     
     allowed_types = ["application/pdf", "text/plain"]
@@ -60,7 +62,6 @@ async def upload_document(file: UploadFile = File(...)):
         "chunks_created": len(chunks)
     }
 
-
 @router.get("/")
-async def list_documents():
+async def list_documents(user: str = Depends(require_auth)):
     return {"documents": list(uploaded_documents.values())}

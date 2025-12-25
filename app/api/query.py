@@ -1,8 +1,9 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
 from pydantic import BaseModel
 from app.rag.embeddings import create_embeddings
 from app.rag.vector_store import search
 from app.rag.llm import generate_answer
+from app.auth.dependencies import require_auth
 
 router = APIRouter()
 
@@ -12,7 +13,7 @@ class QueryRequest(BaseModel):
 
 
 @router.post("/")
-async def query_documents(request: QueryRequest):
+async def query_documents(request: QueryRequest, user: str = Depends(require_auth)):
     
     # Embed frågan
     query_embedding = create_embeddings([request.question])[0]

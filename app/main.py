@@ -1,5 +1,5 @@
 from fastapi import FastAPI
-from app.api import documents,query
+from app.api import documents, query, login
 
 
 app = FastAPI(
@@ -8,6 +8,7 @@ app = FastAPI(
     version="1.0.0"
 )
 
+app.include_router(login.router, prefix="/auth", tags=["Auth"])
 app.include_router(documents.router, prefix="/documents", tags=["Documents"])
 app.include_router(query.router, prefix="/query", tags=["Query"])
 

@@ -1,7 +1,2 @@
 # enviemetn
-.vscode/
-__pycache__/    
-*.pyc
 .env
-.venv/
-# Python
