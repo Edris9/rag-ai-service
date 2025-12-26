@@ -1,3 +1,14 @@
 fastapi
 uvicorn
 python-multipart
+pymupdf
+langchain
+langchain-community
+faiss-cpu
+sentence-transformers
+groq
+python-dotenv
+python-jose[cryptography]
+passlib[bcrypt]
+pytest
+httpx
