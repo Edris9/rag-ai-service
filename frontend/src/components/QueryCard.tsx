@@ -1,22 +1,17 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { MessageSquare, Send, Loader2, FileText, ChevronDown, ChevronUp } from "lucide-react";
 
 interface QueryCardProps {
   token: string;
 }
 
-interface Source {
-  content: string;
-  metadata?: Record<string, unknown>;
-  score?: number;
-}
-
 interface QueryResult {
   question: string;
   answer: string;
-  sources: Source[];
+  sources: string[];
 }
 
 const API_BASE = "http://127.0.0.1:8000";
@@ -26,7 +21,7 @@ export function QueryCard({ token }: QueryCardProps) {
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<QueryResult | null>(null);
   const [error, setError] = useState("");
-  const [expandedSources, setExpandedSources] = useState(false);
+  const [expandedSources, setExpandedSources] = useState<Set<number>>(new Set());
 
   const handleQuery = async () => {
     if (!question.trim()) return;
@@ -50,6 +45,7 @@ export function QueryCard({ token }: QueryCardProps) {
 
       const data = await response.json();
       setResult(data);
+      setExpandedSources(new Set());
     } catch (err) {
       setError(err instanceof Error ? err.message : "Query failed");
     } finally {
@@ -62,6 +58,21 @@ export function QueryCard({ token }: QueryCardProps) {
       e.preventDefault();
       handleQuery();
     }
+  };
+
+  const toggleSource = (index: number) => {
+    const newExpanded = new Set(expandedSources);
+    if (newExpanded.has(index)) {
+      newExpanded.delete(index);
+    } else {
+      newExpanded.add(index);
+    }
+    setExpandedSources(newExpanded);
+  };
+
+  const truncateText = (text: string, maxLength: number = 120) => {
+    if (text.length <= maxLength) return text;
+    return text.substring(0, maxLength) + "...";
   };
 
   return (
@@ -114,44 +125,57 @@ export function QueryCard({ token }: QueryCardProps) {
 
             {/* Sources */}
             {result.sources && result.sources.length > 0 && (
-              <div className="rounded-lg border border-border bg-muted/30 overflow-hidden">
-                <button
-                  onClick={() => setExpandedSources(!expandedSources)}
-                  className="flex w-full items-center justify-between p-4 text-left hover:bg-secondary/30 transition-colors"
-                >
-                  <div className="flex items-center gap-2">
-                    <FileText className="h-4 w-4 text-primary" />
-                    <span className="text-sm font-medium">
-                      Sources ({result.sources.length})
-                    </span>
-                  </div>
-                  {expandedSources ? (
-                    <ChevronUp className="h-4 w-4 text-muted-foreground" />
-                  ) : (
-                    <ChevronDown className="h-4 w-4 text-muted-foreground" />
-                  )}
-                </button>
+              <div className="space-y-3">
+                <div className="flex items-center gap-2">
+                  <FileText className="h-4 w-4 text-primary" />
+                  <span className="text-sm font-medium">
+                    Sources ({result.sources.length})
+                  </span>
+                </div>
 
-                {expandedSources && (
-                  <div className="border-t border-border p-4 space-y-3 max-h-64 overflow-y-auto scrollbar-thin">
-                    {result.sources.map((source, index) => (
-                      <div
-                        key={index}
-                        className="rounded-lg bg-secondary/30 p-3 text-sm animate-slide-in"
+                <div className="space-y-2 max-h-96 overflow-y-auto scrollbar-thin pr-1">
+                  {result.sources.map((source, index) => (
+                    <Collapsible
+                      key={index}
+                      open={expandedSources.has(index)}
+                      onOpenChange={() => toggleSource(index)}
+                    >
+                      <div 
+                        className="rounded-lg border border-border bg-muted/30 overflow-hidden animate-slide-in"
                         style={{ animationDelay: `${index * 50}ms` }}
                       >
-                        <p className="text-muted-foreground leading-relaxed font-mono text-xs">
-                          {source.content}
-                        </p>
-                        {source.score !== undefined && (
-                          <p className="mt-2 text-xs text-primary">
-                            Relevance: {(source.score * 100).toFixed(1)}%
-                          </p>
-                        )}
+                        <CollapsibleTrigger asChild>
+                          <button className="w-full p-3 flex items-start justify-between gap-3 hover:bg-secondary/30 transition-colors text-left">
+                            <div className="flex items-start gap-3 flex-1 min-w-0">
+                              <span className="flex-shrink-0 w-6 h-6 rounded-full bg-primary/20 text-primary text-xs font-bold flex items-center justify-center">
+                                {index + 1}
+                              </span>
+                              <p className="text-sm text-muted-foreground flex-1 font-mono text-xs leading-relaxed">
+                                {expandedSources.has(index) 
+                                  ? "Click to collapse" 
+                                  : truncateText(source)}
+                              </p>
+                            </div>
+                            {expandedSources.has(index) ? (
+                              <ChevronUp className="h-4 w-4 text-muted-foreground flex-shrink-0 mt-0.5" />
+                            ) : (
+                              <ChevronDown className="h-4 w-4 text-muted-foreground flex-shrink-0 mt-0.5" />
+                            )}
+                          </button>
+                        </CollapsibleTrigger>
+                        <CollapsibleContent>
+                          <div className="px-3 pb-3 pt-0">
+                            <div className="p-3 rounded-md bg-secondary/50 border border-border/50">
+                              <p className="text-sm text-foreground whitespace-pre-wrap leading-relaxed font-mono text-xs">
+                                {source}
+                              </p>
+                            </div>
+                          </div>
+                        </CollapsibleContent>
                       </div>
-                    ))}
-                  </div>
-                )}
+                    </Collapsible>
+                  ))}
+                </div>
               </div>
             )}
           </div>

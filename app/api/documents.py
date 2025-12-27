@@ -70,11 +70,11 @@ async def list_documents(user: str = Depends(require_auth)):
 @router.post("/clear")
 async def clear_documents(user: str = Depends(require_auth)):
     """Rensa alla dokument från minnet."""
-    global uploaded_documents
+    global uploaded_documents, vector_store_initialized
     uploaded_documents = {}
+    vector_store_initialized = False
     
-    # Rensa vector store
-    from app.rag.vector_store import init_vector_store
-    init_vector_store()
+    from app.rag.vector_store import clear_vector_store
+    clear_vector_store()
     
     return {"message": "✅ Alla dokument rensade!"}

@@ -1,6 +1,7 @@
 import { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
-import { Upload, FileText, Loader2, CheckCircle, X } from "lucide-react";
+import { Upload, FileText, Loader2, CheckCircle, X, Trash2 } from "lucide-react";
+import { toast } from "sonner";
 
 interface UploadCardProps {
   token: string;
@@ -17,6 +18,7 @@ const API_BASE = "http://127.0.0.1:8000";
 export function UploadCard({ token }: UploadCardProps) {
   const [file, setFile] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
+  const [clearing, setClearing] = useState(false);
   const [result, setResult] = useState<UploadResult | null>(null);
   const [error, setError] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
@@ -65,6 +67,29 @@ export function UploadCard({ token }: UploadCardProps) {
     }
   };
 
+  const handleClearMemory = async () => {
+    setClearing(true);
+    try {
+      const response = await fetch(`${API_BASE}/documents/clear`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error("Clear failed");
+      }
+
+      setResult(null);
+      toast.success("Memory cleared! All documents removed from vector store.");
+    } catch (err) {
+      toast.error("Failed to clear memory. Please try again.");
+    } finally {
+      setClearing(false);
+    }
+  };
+
   const clearFile = () => {
     setFile(null);
     if (inputRef.current) {
@@ -74,9 +99,26 @@ export function UploadCard({ token }: UploadCardProps) {
 
   return (
     <div className="rounded-xl border border-border bg-card p-6 border-gradient animate-fade-in">
-      <div className="mb-4 flex items-center gap-2">
-        <Upload className="h-5 w-5 text-primary" />
-        <h2 className="text-lg font-semibold">Document Upload</h2>
+      <div className="mb-4 flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <Upload className="h-5 w-5 text-primary" />
+          <h2 className="text-lg font-semibold">Document Upload</h2>
+        </div>
+        <Button
+          onClick={handleClearMemory}
+          disabled={clearing}
+          variant="destructive"
+          size="sm"
+        >
+          {clearing ? (
+            <Loader2 className="h-4 w-4 animate-spin" />
+          ) : (
+            <>
+              <Trash2 className="h-4 w-4 mr-1" />
+              Clear Memory
+            </>
+          )}
+        </Button>
       </div>
 
       <div className="space-y-4">
