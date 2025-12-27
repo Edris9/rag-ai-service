@@ -1,10 +1,13 @@
-from sentence_transformers import SentenceTransformer
+import os
+import requests
+from dotenv import load_dotenv
 
-# Ladda modell (liten och snabb)
-model = SentenceTransformer("all-MiniLM-L6-v2")
-
+load_dotenv()
 
 def create_embeddings(texts: list[str]) -> list:
-    """Skapar embeddings för en lista av texter."""
-    embeddings = model.encode(texts)
-    return embeddings.tolist()
+    """Skapar embeddings via HuggingFace API (gratis)."""
+    API_URL = "https://api-inference.huggingface.co/pipeline/feature-extraction/sentence-transformers/all-MiniLM-L6-v2"
+    headers = {"Authorization": f"Bearer {os.getenv('HF_API_KEY')}"}
+    
+    response = requests.post(API_URL, headers=headers, json={"inputs": texts})
+    return response.json()

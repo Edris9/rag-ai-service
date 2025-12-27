@@ -2,14 +2,12 @@ fastapi
 uvicorn
 python-multipart
 pymupdf
-langchain
-langchain-community
 langchain-text-splitters
 faiss-cpu
-sentence-transformers
 groq
 python-dotenv
 python-jose[cryptography]
 passlib[bcrypt]
-pytest
 httpx
+numpy
+requests
