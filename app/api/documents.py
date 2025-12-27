@@ -65,3 +65,16 @@ async def upload_document(file: UploadFile = File(...), user: str = Depends(requ
 @router.get("/")
 async def list_documents(user: str = Depends(require_auth)):
     return {"documents": list(uploaded_documents.values())}
+
+
+@router.post("/clear")
+async def clear_documents(user: str = Depends(require_auth)):
+    """Rensa alla dokument från minnet."""
+    global uploaded_documents
+    uploaded_documents = {}
+    
+    # Rensa vector store
+    from app.rag.vector_store import init_vector_store
+    init_vector_store()
+    
+    return {"message": "✅ Alla dokument rensade!"}
