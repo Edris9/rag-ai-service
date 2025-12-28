@@ -1,6 +1,6 @@
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
-from app.auth.auth import fake_users, verify_password, create_token
+from app.auth.auth import verify_user, create_token
 
 router = APIRouter()
 
@@ -12,11 +12,11 @@ class LoginRequest(BaseModel):
 
 @router.post("/login")
 async def login(request: LoginRequest):
-    user = fake_users.get(request.username)
+    user = verify_user(request.username, request.password)
     
-    if not user or not verify_password(request.password, user["password"]):
+    if not user:
         raise HTTPException(status_code=401, detail="Fel användarnamn eller lösenord")
     
     token = create_token(request.username)
     
-    return {"access_token": token, "token_type": "bearer"}
+    return {"access_token": token, "token_type": "bearer", "user_id": user["id"]}

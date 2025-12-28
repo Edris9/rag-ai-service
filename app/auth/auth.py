@@ -1,27 +1,29 @@
 import os
+import requests
 from datetime import datetime, timedelta
 from dotenv import load_dotenv
 from jose import jwt
-from passlib.context import CryptContext
 
 load_dotenv()
 
 SECRET_KEY = os.getenv("SECRET_KEY")
 ALGORITHM = "HS256"
-
-pwd_context = CryptContext(schemes=["bcrypt"])
-
-# Fake user DB (ersätts med riktig DB senare)
-fake_users = {
-    "admin": {
-        "username": "admin",
-        "password": pwd_context.hash("admin123")
-    }
-}
+CSHARP_API_URL = os.getenv("CSHARP_API_URL", "https://rag-ai-service-production.up.railway.app")
 
 
-def verify_password(plain: str, hashed: str) -> bool:
-    return pwd_context.verify(plain, hashed)
+def verify_user(username: str, password: str) -> dict | None:
+    """Verifiera användare via C# API."""
+    try:
+        response = requests.post(
+            f"{CSHARP_API_URL}/api/Users/login",
+            json={"username": username, "password": password},
+            timeout=10
+        )
+        if response.status_code == 200:
+            return response.json()
+        return None
+    except:
+        return None
 
 
 def create_token(username: str) -> str:
