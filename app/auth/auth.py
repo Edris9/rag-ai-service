@@ -26,6 +26,21 @@ def verify_user(username: str, password: str) -> dict | None:
         return None
 
 
+def register_user(username: str, password: str) -> dict | None:
+    """Registrera ny användare via C# API."""
+    try:
+        response = requests.post(
+            f"{CSHARP_API_URL}/api/Users/register",
+            json={"username": username, "password": password},
+            timeout=10
+        )
+        if response.status_code == 200:
+            return response.json()
+        return None
+    except:
+        return None
+
+
 def create_token(username: str) -> str:
     expire = datetime.utcnow() + timedelta(hours=24)
     data = {"sub": username, "exp": expire}
