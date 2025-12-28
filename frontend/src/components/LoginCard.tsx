@@ -1,40 +1,51 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { LogIn, Loader2, CheckCircle } from "lucide-react";
+import { LogIn, Loader2, CheckCircle, UserPlus } from "lucide-react";
 
 interface LoginCardProps {
   onLogin: (token: string) => void;
   isLoggedIn: boolean;
 }
 
-const API_BASE = "https://focused-prosperity-production-ebc4.up.railway.app";
+const API_BASE = import.meta.env.VITE_API_URL || "https://focused-prosperity-production-ebc4.up.railway.app";
 
 export function LoginCard({ onLogin, isLoggedIn }: LoginCardProps) {
-  const [username, setUsername] = useState("admin");
-  const [password, setPassword] = useState("admin123");
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [isRegister, setIsRegister] = useState(false);
+  const [success, setSuccess] = useState("");
 
-  const handleLogin = async () => {
+  const handleSubmit = async () => {
     setLoading(true);
     setError("");
+    setSuccess("");
 
     try {
-      const response = await fetch(`${API_BASE}/auth/login`, {
+      const endpoint = isRegister ? "/auth/register" : "/auth/login";
+      const response = await fetch(`${API_BASE}${endpoint}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ username, password }),
       });
 
+      const data = await response.json();
+
       if (!response.ok) {
-        throw new Error("Invalid credentials");
+        throw new Error(data.detail || "Något gick fel");
       }
 
-      const data = await response.json();
-      onLogin(data.access_token);
+      if (isRegister) {
+        setSuccess("Konto skapat! Du kan nu logga in.");
+        setIsRegister(false);
+        setPassword("");
+      } else {
+        onLogin(data.access_token);
+      }
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Login failed");
+      setError(err instanceof Error ? err.message : "Något gick fel");
     } finally {
       setLoading(false);
     }
@@ -59,8 +70,14 @@ export function LoginCard({ onLogin, isLoggedIn }: LoginCardProps) {
   return (
     <div className="rounded-xl border border-border bg-card p-6 border-gradient animate-fade-in">
       <div className="mb-4 flex items-center gap-2">
-        <LogIn className="h-5 w-5 text-primary" />
-        <h2 className="text-lg font-semibold">Authentication</h2>
+        {isRegister ? (
+          <UserPlus className="h-5 w-5 text-primary" />
+        ) : (
+          <LogIn className="h-5 w-5 text-primary" />
+        )}
+        <h2 className="text-lg font-semibold">
+          {isRegister ? "Skapa konto" : "Logga in"}
+        </h2>
       </div>
 
       <div className="space-y-4">
@@ -69,7 +86,7 @@ export function LoginCard({ onLogin, isLoggedIn }: LoginCardProps) {
           <Input
             value={username}
             onChange={(e) => setUsername(e.target.value)}
-            placeholder="Enter username"
+            placeholder="Ange användarnamn"
           />
         </div>
 
@@ -79,7 +96,7 @@ export function LoginCard({ onLogin, isLoggedIn }: LoginCardProps) {
             type="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            placeholder="Enter password"
+            placeholder="Ange lösenord"
           />
         </div>
 
@@ -87,8 +104,12 @@ export function LoginCard({ onLogin, isLoggedIn }: LoginCardProps) {
           <p className="text-sm text-destructive animate-fade-in">{error}</p>
         )}
 
+        {success && (
+          <p className="text-sm text-primary animate-fade-in">{success}</p>
+        )}
+
         <Button
-          onClick={handleLogin}
+          onClick={handleSubmit}
           disabled={loading || !username || !password}
           variant="glow"
           className="w-full"
@@ -96,15 +117,37 @@ export function LoginCard({ onLogin, isLoggedIn }: LoginCardProps) {
           {loading ? (
             <>
               <Loader2 className="h-4 w-4 animate-spin" />
-              Authenticating...
+              {isRegister ? "Skapar konto..." : "Loggar in..."}
             </>
           ) : (
             <>
-              <LogIn className="h-4 w-4" />
-              Login
+              {isRegister ? (
+                <>
+                  <UserPlus className="h-4 w-4" />
+                  Skapa konto
+                </>
+              ) : (
+                <>
+                  <LogIn className="h-4 w-4" />
+                  Logga in
+                </>
+              )}
             </>
           )}
         </Button>
+
+        <button
+          onClick={() => {
+            setIsRegister(!isRegister);
+            setError("");
+            setSuccess("");
+          }}
+          className="w-full text-sm text-muted-foreground hover:text-primary transition-colors"
+        >
+          {isRegister
+            ? "Har redan ett konto? Logga in"
+            : "Inget konto? Skapa ett här"}
+        </button>
       </div>
     </div>
   );
