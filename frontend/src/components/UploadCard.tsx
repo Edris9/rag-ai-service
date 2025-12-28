@@ -13,7 +13,7 @@ interface UploadResult {
   message: string;
 }
 
-const API_BASE = "https://focused-prosperity-production-d191.up.railway.app";
+const API_BASE = "https://focused-prosperity-production-ebc4.up.railway.app";
 
 export function UploadCard({ token }: UploadCardProps) {
   const [file, setFile] = useState<File | null>(null);

@@ -8,7 +8,7 @@ interface LoginCardProps {
   isLoggedIn: boolean;
 }
 
-const API_BASE = "https://focused-prosperity-production-d191.up.railway.app";
+const API_BASE = "https://focused-prosperity-production-ebc4.up.railway.app";
 
 export function LoginCard({ onLogin, isLoggedIn }: LoginCardProps) {
   const [username, setUsername] = useState("admin");

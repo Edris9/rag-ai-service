@@ -14,7 +14,7 @@ interface QueryResult {
   sources: string[];
 }
 
-const API_BASE = "https://focused-prosperity-production-d191.up.railway.app";
+const API_BASE = "https://focused-prosperity-production-ebc4.up.railway.app";
 
 export function QueryCard({ token }: QueryCardProps) {
   const [question, setQuestion] = useState("");
