@@ -22,5 +22,5 @@ async def query_documents(request: QueryRequest, user: str = Depends(require_aut
     return {
         "question": request.question,
         "answer": answer,
-        "sources": chunks
+        "sources": context_texts
     }
