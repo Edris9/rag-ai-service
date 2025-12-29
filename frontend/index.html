@@ -21,6 +21,20 @@
 
   <body>
     <div id="root"></div>
-    <script type="module" src="/src/main.tsx"></script>
+    <div id="popup" style="position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.8);display:flex;justify-content:center;align-items:center;z-index:9999;">
+  <div style="background:#1a1a2e;padding:30px;border-radius:10px;max-width:400px;text-align:center;color:white;">
+    <button onclick="setLang('en')" style="margin:5px;padding:5px 10px;">🇬🇧 EN</button>
+    <button onclick="setLang('sv')" style="margin:5px;padding:5px 10px;">🇸🇪 SV</button>
+    <p id="msg" style="margin:20px 0;line-height:1.6;">⚠️ Work in Progress<br><br>I'm currently adding new features. The app might not work perfectly right now, but I'll be back when everything is ready!<br><br>- Edris</p>
+    <button onclick="document.getElementById('popup').style.display='none'" style="padding:10px 20px;background:#00d4ff;border:none;border-radius:5px;cursor:pointer;">OK</button>
+  </div>
+</div>
+    <script type="module" src="/src/main.tsx">
+      function setLang(l){
+  document.getElementById('msg').innerHTML = l==='sv' 
+    ? '⚠️ Pågående arbete<br><br>Jag håller på att lägga till nya funktioner. Appen kanske inte fungerar perfekt just nu, men jag återkommer när allt är klart!<br><br>- Edris'
+    : '⚠️ Work in Progress<br><br>I\'m currently adding new features. The app might not work perfectly right now, but I\'ll be back when everything is ready!<br><br>- Edris';
+}
+    </script>
   </body>
 </html>
