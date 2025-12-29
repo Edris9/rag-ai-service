@@ -12,6 +12,9 @@ def create_embeddings(texts: list[str]) -> list:
     if not texts:
         return []
     
+    print(f"Creating embeddings for {len(texts)} texts")
+    print(f"COHERE_API_KEY exists: {bool(COHERE_API_KEY)}")
+    
     try:
         response = requests.post(
             "https://api.cohere.ai/v1/embed",
@@ -27,8 +30,12 @@ def create_embeddings(texts: list[str]) -> list:
             timeout=30
         )
         
+        print(f"Cohere status: {response.status_code}")
+        
         if response.status_code == 200:
-            return response.json()["embeddings"]
+            embeddings = response.json()["embeddings"]
+            print(f"Cohere SUCCESS - got {len(embeddings)} embeddings")
+            return embeddings
         else:
             print(f"Cohere error: {response.text}")
             return _fallback_embeddings(texts)
@@ -39,6 +46,8 @@ def create_embeddings(texts: list[str]) -> list:
 
 def create_query_embedding(text: str) -> list:
     """Skapa embedding för query."""
+    print(f"Creating query embedding for: {text[:50]}...")
+    
     try:
         response = requests.post(
             "https://api.cohere.ai/v1/embed",
@@ -54,16 +63,22 @@ def create_query_embedding(text: str) -> list:
             timeout=30
         )
         
+        print(f"Cohere query status: {response.status_code}")
+        
         if response.status_code == 200:
+            print("Cohere query SUCCESS")
             return response.json()["embeddings"][0]
         else:
+            print(f"Cohere query error: {response.text}")
             return _fallback_embeddings([text])[0]
-    except:
+    except Exception as e:
+        print(f"Cohere query exception: {e}")
         return _fallback_embeddings([text])[0]
 
 
 def _fallback_embeddings(texts: list[str]) -> list:
     """Fallback hash-embeddings om API failar."""
+    print("Using FALLBACK embeddings")
     import hashlib
     embeddings = []
     for text in texts:
