@@ -52,3 +52,9 @@ def clear_vector_store():
     global vector_store, chunks_data
     vector_store = None
     chunks_data = []
+
+def init_vector_store():
+    """Initialize vector store - kallas vid startup."""
+    global vector_store, chunks_data
+    vector_store = None
+    chunks_data = []
