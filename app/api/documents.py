@@ -4,7 +4,7 @@ import uuid
 from app.services.pdf_extractor import extract_text_from_pdf
 from app.rag.chunker import chunk_text
 from app.rag.embeddings import create_embeddings
-from app.rag.vector_store import init_vector_store, add_to_store
+from app.rag.vector_store import init_vector_store, add_to_vector_store
 from app.services.pdf_extractor import extract_text_from_pdf
 
 router = APIRouter()
@@ -46,7 +46,7 @@ async def upload_document(file: UploadFile = File(...), user: str = Depends(requ
         vector_store_initialized = True
     
     # Lägg till i vector store
-    add_to_store(chunks, embeddings)
+    add_to_vector_store(chunks, doc_id)
     
     # Spara metadata
     uploaded_documents[doc_id] = {
