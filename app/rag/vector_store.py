@@ -1,47 +1,54 @@
 import faiss
 import numpy as np
+from app.rag.embeddings import create_embeddings, create_query_embedding
 
-# Global storage
-index = None
-stored_chunks = []
+vector_store = None
+chunks_data = []
 
 
-def init_vector_store(dimension: int = 384):
-    """Initiera FAISS index."""
-    global index, stored_chunks
-    index = faiss.IndexFlatL2(dimension)
-    stored_chunks = []
+def add_to_vector_store(chunks: list[str], doc_id: str):
+    global vector_store, chunks_data
+    
+    embeddings = create_embeddings(chunks)
+    if not embeddings:
+        return
+    
+    embeddings_np = np.array(embeddings).astype('float32')
+    dimension = embeddings_np.shape[1]
+    
+    if vector_store is None:
+        vector_store = faiss.IndexFlatL2(dimension)
+    
+    vector_store.add(embeddings_np)
+    
+    for chunk in chunks:
+        chunks_data.append({"text": chunk, "doc_id": doc_id})
+
+
+def search_vector_store(query: str, k: int = 3) -> list:
+    global vector_store, chunks_data
+    
+    if vector_store is None or len(chunks_data) == 0:
+        return []
+    
+    query_embedding = create_query_embedding(query)
+    query_np = np.array([query_embedding]).astype('float32')
+    
+    distances, indices = vector_store.search(query_np, k)
+    
+    results = []
+    for i, idx in enumerate(indices[0]):
+        if idx < len(chunks_data):
+            results.append({
+                "text": chunks_data[idx]["text"],
+                "doc_id": chunks_data[idx]["doc_id"],
+                "score": float(distances[0][i])
+            })
+    
+    return results
 
 
 def clear_vector_store():
-    """Rensa vector store helt."""
-    global index, stored_chunks
-    index = None
-    stored_chunks = []
-
-
-def add_to_store(chunks: list[str], embeddings: list):
-    """Lägg till chunks och embeddings."""
-    global index, stored_chunks
-    
-    if index is None:
-        init_vector_store()
-    
-    stored_chunks.extend(chunks)
-    vectors = np.array(embeddings).astype("float32")
-    index.add(vectors)
-
-
-def search(query_embedding: list, top_k: int = 3) -> list[str]:
-    """Sök efter liknande chunks."""
-    if index is None:
-        return []
-    
-    query_vector = np.array([query_embedding]).astype("float32")
-    distances, indices = index.search(query_vector, top_k)
-    
-    results = []
-    for idx in indices[0]:
-        if idx < len(stored_chunks):
-            results.append(stored_chunks[idx])
-    return results
+    global vector_store, chunks_data
+    vector_store = None
+    chunks_data = []

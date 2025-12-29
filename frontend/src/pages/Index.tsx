@@ -48,7 +48,7 @@ const Index = () => {
           <Terminal className="h-4 w-4 text-primary" />
           <span className="text-muted-foreground">Status:</span>
           <span className={token ? "text-primary" : "text-muted-foreground"}>
-            {token ? "● Connected" : "○ Not authenticated"}
+            {token ? "● Connected" : "○ Not authenticated"}            
           </span>
         </div>
 
