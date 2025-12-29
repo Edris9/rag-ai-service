@@ -10,22 +10,25 @@ client = Groq(api_key=os.getenv("GROQ_API_KEY"))
 def generate_answer(question: str, context_chunks: list[str]) -> str:
     """Generera svar baserat på fråga och kontext."""
     
-    context = "\n\n".join(context_chunks)
+    context = "\n\n---\n\n".join(context_chunks)
     
-    prompt = f"""You are a helpful AI assistant. Answer the question based ONLY on the context below.
-If the answer is not in the context, say "I don't know based on the provided documents."
+    prompt = f"""You are a helpful AI assistant analyzing a document (likely a CV/resume).
 
-Context:
+Based on the context below, answer the user's question. Be helpful and extract relevant information.
+If the context contains relevant information, summarize and present it clearly.
+Only say you don't know if the context truly contains no relevant information.
+
+Context from document:
 {context}
 
-Question: {question}
+User's question: {question}
 
-Answer:"""
+Helpful answer:"""
 
     response = client.chat.completions.create(
         model="llama-3.3-70b-versatile",
         messages=[{"role": "user", "content": prompt}],
-        temperature=0.3,
+        temperature=0.5,
         max_tokens=500
     )
     
