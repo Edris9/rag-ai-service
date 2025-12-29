@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends
 from pydantic import BaseModel
 from app.rag.embeddings import create_embeddings
-from app.rag.vector_store import search
+from app.rag.vector_store import search_vector_store
 from app.rag.llm import generate_answer
 from app.auth.dependencies import require_auth
 
@@ -19,7 +19,7 @@ async def query_documents(request: QueryRequest, user: str = Depends(require_aut
     query_embedding = create_embeddings([request.question])[0]
     
     # Sök i vector store
-    chunks = search(query_embedding, top_k=3)
+    chunks = search_vector_store(request.question, k=3)
     
     # Generera svar med LLM
     answer = generate_answer(request.question, chunks)
