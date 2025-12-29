@@ -15,15 +15,10 @@ class QueryRequest(BaseModel):
 @router.post("/")
 async def query_documents(request: QueryRequest, user: str = Depends(require_auth)):
     
-    # Embed frågan
-    query_embedding = create_embeddings([request.question])[0]
-    
-    # Sök i vector store
     chunks = search_vector_store(request.question, k=3)
-    
-    # Generera svar med LLM
-    answer = generate_answer(request.question, chunks)
-    
+    context_texts = [chunk["text"] for chunk in chunks]
+    answer = generate_answer(request.question, context_texts)
+        
     return {
         "question": request.question,
         "answer": answer,
